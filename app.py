@@ -16,17 +16,14 @@ app = Flask(__name__)
 
 def load_tokens(server_name):
     try:
-        # Link direto para o JSON BR
-        url = "https://tokentteste.vercel.app/token"
-        
-        response = requests.get(url)
-        response.raise_for_status()  # Vai dar erro se a resposta não for 200 OK
-        
-        tokens = response.json()  # Converte diretamente para dict/list
+        response = requests.get("https://tokentteste.vercel.app/token", timeout=5)
+        response.raise_for_status()
+        tokens = response.json()
+        if not isinstance(tokens, list) or not tokens:
+            raise ValueError("Empty or invalid token list received")
         return tokens
-
     except Exception as e:
-        print(f"Error loading tokens for server {server_name}: {e}")
+        app.logger.error(f"Error loading tokens for {server_name}: {e}")
         return None
 
 def encrypt_message(plaintext):
