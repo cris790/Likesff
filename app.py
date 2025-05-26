@@ -11,7 +11,6 @@ import like_pb2
 import like_count_pb2
 import uid_generator_pb2
 from google.protobuf.message import DecodeError
-import time
 
 app = Flask(__name__)
 
@@ -166,8 +165,6 @@ def handle_requests():
         return jsonify({"error": "UID and server_name are required"}), 400
 
     try:
-        start_time = time.time()
-        
         def process_request():
             tokens = load_tokens(server_name)
             if tokens is None:
@@ -177,7 +174,7 @@ def handle_requests():
             if encrypted_uid is None:
                 raise Exception("Encryption of UID failed.")
 
-            # Get player data before like
+            # الحصول على بيانات اللاعب قبل تنفيذ عملية الإعجاب
             before = make_request(encrypted_uid, server_name, token)
             if before is None:
                 raise Exception("Failed to retrieve initial player info.")
@@ -193,7 +190,7 @@ def handle_requests():
                 before_like = 0
             app.logger.info(f"Likes before command: {before_like}")
 
-            # Determine like URL based on server name
+            # تحديد رابط الإعجاب حسب اسم السيرفر
             if server_name == "IND":
                 url = "https://client.ind.freefiremobile.com/LikeProfile"
             elif server_name in {"BR", "US", "SAC", "NA"}:
@@ -201,10 +198,10 @@ def handle_requests():
             else:
                 url = "https://clientbp.ggblueshark.com/LikeProfile"
 
-            # Send async requests
+            # إرسال الطلبات بشكل غير متزامن
             asyncio.run(send_multiple_requests(uid, server_name, url))
 
-            # Get player data after like
+            # الحصول على بيانات اللاعب بعد تنفيذ عملية الإعجاب
             after = make_request(encrypted_uid, server_name, token)
             if after is None:
                 raise Exception("Failed to retrieve player info after like requests.")
@@ -216,22 +213,15 @@ def handle_requests():
             after_like = int(data_after.get('AccountInfo', {}).get('Likes', 0))
             player_uid = int(data_after.get('AccountInfo', {}).get('UID', 0))
             player_name = str(data_after.get('AccountInfo', {}).get('PlayerNickname', ''))
-            
-            total_likes_sent = after_like - before_like
-            success_status = total_likes_sent > 0
-            
-            elapsed_time = time.time() - start_time
-            
+            like_given = after_like - before_like
+            status = 1 if like_given != 0 else 2
             result = {
-                "success": success_status,
-                "message": f"{total_likes_sent} likes adicionado com sucesso" if success_status else "Nenhum like foi enviado",
-                "PlayerName": player_name,
-                "UID": str(player_uid),
-                "Region": server_name,
-                "Before Like": str(before_like),
-                "Likes After": str(after_like),
-                "Total likes sent": total_likes_sent,
-                "Time Takes": f"{elapsed_time:.2f} segundos"
+                "LikesGivenByAPI": like_given,
+                "LikesafterCommand": after_like,
+                "LikesbeforeCommand": before_like,
+                "PlayerNickname": player_name,
+                "UID": player_uid,
+                "status": status
             }
             return result
 
