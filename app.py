@@ -17,7 +17,7 @@ app = Flask(__name__)
 
 def load_tokens(server_name):
     try:
-        response = requests.get("https://tokensff.vercel.app/token", timeout=5)
+        response = requests.get("https://tokenff.discloud.app/token", timeout=5)
         response.raise_for_status()
         tokens = response.json()
         if not isinstance(tokens, list) or not tokens:
