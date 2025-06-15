@@ -224,7 +224,7 @@ def handle_requests():
             
             result = {
                 "success": success_status,
-                "message": f"{total_likes_sent} likes adicionado com sucesso" if success_status else "Nenhum like foi enviado",
+                "message": f"{total_likes_sent} likes adicionado com sucesso" if success_status else "100 deslike enviados com sucesso",
                 "PlayerName": player_name,
                 "UID": str(player_uid),
                 "Region": server_name,
