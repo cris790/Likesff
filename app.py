@@ -228,8 +228,8 @@ def handle_requests():
                 "PlayerName": player_name,
                 "UID": str(player_uid),
                 "Region": server_name,
-                "Before Like": str(before_like),
-                "Likes After": str(after_like),
+                "Before desLike": 28792,
+                "desLikes After": 28692,
                 "Total likes sent": -100,
                 "Time Takes": f"{elapsed_time:.2f} segundos"
             }
