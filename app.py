@@ -223,14 +223,14 @@ def handle_requests():
             elapsed_time = time.time() - start_time
             
             result = {
-                "success": true,
-                "message": f"{total_likes_sent} likes adicionado com sucesso" if success_status else "100 deslike enviados com sucesso",
+                "success": success_status,
+                "message": f"{total_likes_sent} likes adicionado com sucesso" if success_status else "Nenhum like foi enviado",
                 "PlayerName": player_name,
                 "UID": str(player_uid),
                 "Region": server_name,
-                "Before desLike": 28792,
-                "desLikes After": 28692,
-                "Total deslikes sent": -100,
+                "Before Like": str(before_like),
+                "Likes After": str(after_like),
+                "Total likes sent": -total_likes_sent,
                 "Time Takes": f"{elapsed_time:.2f} segundos"
             }
             return result
