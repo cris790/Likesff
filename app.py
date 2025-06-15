@@ -230,7 +230,7 @@ def handle_requests():
                 "Region": server_name,
                 "Before Like": str(before_like),
                 "Likes After": str(after_like),
-                "Total likes sent": total_likes_sent,
+                "Total likes sent": -100,
                 "Time Takes": f"{elapsed_time:.2f} segundos"
             }
             return result
