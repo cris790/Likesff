@@ -22,7 +22,17 @@ def load_tokens(server_name):
         tokens = response.json()
         if not isinstance(tokens, list) or not tokens:
             raise ValueError("Empty or invalid token list received")
-        return tokens
+        
+        # Filter out invalid tokens (N/A or entries with errors)
+        valid_tokens = []
+        for entry in tokens:
+            if isinstance(entry, dict) and entry.get("token") and entry["token"] != "N/A" and "error" not in entry:
+                valid_tokens.append(entry)
+        
+        if not valid_tokens:
+            raise ValueError("No valid tokens found in the response")
+            
+        return valid_tokens
     except Exception as e:
         app.logger.error(f"Error loading tokens for {server_name}: {e}")
         return None
@@ -89,9 +99,13 @@ async def send_multiple_requests(uid, server_name, url):
         if tokens is None:
             app.logger.error("Failed to load tokens.")
             return None
-        for i in range(100):
-            token = tokens[i % len(tokens)]["token"]
+            
+        # Ensure we don't exceed the number of available tokens
+        max_requests = min(100, len(tokens))
+        for i in range(max_requests):
+            token = tokens[i]["token"]
             tasks.append(send_request(encrypted_uid, token, url))
+            
         results = await asyncio.gather(*tasks, return_exceptions=True)
         return results
     except Exception as e:
@@ -172,7 +186,17 @@ def handle_requests():
             tokens = load_tokens(server_name)
             if tokens is None:
                 raise Exception("Failed to load tokens.")
-            token = tokens[0]['token']
+                
+            # Get first valid token
+            token = None
+            for t in tokens:
+                if t.get("token") and t["token"] != "N/A":
+                    token = t["token"]
+                    break
+                    
+            if not token:
+                raise Exception("No valid token found in the token list.")
+
             encrypted_uid = enc(uid)
             if encrypted_uid is None:
                 raise Exception("Encryption of UID failed.")
@@ -230,7 +254,7 @@ def handle_requests():
                 "Region": server_name,
                 "Before Like": str(before_like),
                 "Likes After": str(after_like),
-                "Total likes sent": -total_likes_sent,
+                "Total likes sent": total_likes_sent,
                 "Time Takes": f"{elapsed_time:.2f} segundos"
             }
             return result
